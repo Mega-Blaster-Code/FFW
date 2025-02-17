@@ -1,3 +1,6 @@
+-- Frame For Widgets
+-- Need Mega Drawing Sistem to work.
+
 local module = {}
 
 GlobalLayer = 1
