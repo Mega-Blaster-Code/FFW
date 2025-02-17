@@ -9,7 +9,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
 
     float cosR = cos(rotation);
     float sinR = sin(rotation);
-    vec2 rotated = vec2(cosR * Pos.x - sinRot * Pos.y, sinR * Pos.x + sinR * Pos.y);
+    vec2 rotated = vec2(cosR * Pos.x - sinR * Pos.y, sinR * Pos.x + sinR * Pos.y);
 
     float t = (rotated.x + (size.x * 0.5)) / size.x;
     vec4 gradient = mix(color1, color2, t);
