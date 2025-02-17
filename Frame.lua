@@ -98,7 +98,7 @@ function buttons:draw()
     GradientShader:send("center", {self.size.w / 2 + self.position.x, self.size.h / 2 + self.position.y})
     GradientShader:send("rotation", math.rad(self.Gradient.Rotation))
 
-    love.graphics.setShader(GradientShader)
+    love.graphics.setShader(GradientShader) -- Load Shader
     ds.draw.rectangle(self.position.x, self.position.y, self.size.w, self.size.h, nil, nil, nil, self.Border.Radius, self.Border.Color, self.Border.Active)
 
     ds.draw.text(self.position.x, self.position.y, self.Z)
