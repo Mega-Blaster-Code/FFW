@@ -1,5 +1,5 @@
 -- Frame For Widgets
--- Need Mega Drawing Sistem to work.
+-- Need Mega Drawing System to work.
 
 local module = {}
 
