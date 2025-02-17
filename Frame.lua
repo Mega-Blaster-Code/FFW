@@ -117,12 +117,16 @@ function buttons:draw()
 
     ds.draw.rectangle(self.position.x, self.position.y, self.size.w, self.size.h, color, nil, nil, self.Border.Radius, borderColor, self.Border.Active)
 
-    local x = self.position.x + self.size.w / 2 - ((#self.text - 1) * self.textSize) / 2
-    local y = self.position.y + self.size.h / 2 - self.textSize / 2
-    
-    --ds.draw.rectangle(x, y + 15, (#self.text - 1) * self.textSize, self.textSize)
+    local font = love.graphics.getFont()
+    local textWidth = font:getWidth(self.text) * (self.textSize / 256) -- Ajustar a escala da fonte
+    local textHeight = font:getHeight() * (self.textSize / 256) -- Ajustar a altura
 
-    ds.draw.text(x, y, self.text, textColor, self.textSize)
+    local x = self.position.x + (self.size.w - textWidth) / 2
+    local y = self.position.y + (self.size.h - textHeight) / 2
+
+    --ds.draw.rectangle(x, y + 15, textWidth, textHeight)
+    ds.draw.text(x, y, self.text, textColor, textWidth / (#self.text / 2))
+
 
 
 end
