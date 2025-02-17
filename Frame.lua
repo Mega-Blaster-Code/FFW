@@ -8,7 +8,7 @@ nameHold = nil
 buttons = {}
 buttons.__index = buttons
 
-function buttons.new(name, x, y, w, h, color, text, layer, Zindex, clickedColor) --@string? @number?, @number?, @number?, @number?, @table?, @string?, @number?, @number?, @table?
+function buttons.new(name, x, y, w, h, color, text, textSize, textColor, layer, Zindex, clickedColor) --@string? @number?, @number?, @number?, @number?, @table?, @string?, @number?, @number?, @table?
     color = color or {255, 255, 255, 255}
     clickedColor = clickedColor or {color[1] / 1.5, color[2] / 1.5, color[3] / 1.5, color[4]}
     name = name or "NIL"
@@ -18,9 +18,12 @@ function buttons.new(name, x, y, w, h, color, text, layer, Zindex, clickedColor)
     local button = setmetatable({
 
         name = name,
+        text = text,
         position = {x = x, y = y},
         size = {w = w, h = h},
+        textSize = textSize or 16,
         color = color,
+        textColor = textColor or { 255, 255, 255, 255},
         clickedColor = clickedColor,
         click = false,
         hold = false,
@@ -36,7 +39,8 @@ function buttons.new(name, x, y, w, h, color, text, layer, Zindex, clickedColor)
             Color1 = {0, 0, 0, 255},
             Color2 = {255, 255, 255, 255},
             Rotation = 0
-        }
+        },
+        ColorDecrease = 1.5
 
     }, buttons)
 
@@ -57,7 +61,7 @@ function buttons:optionals(Border, Gradient)
     local GActive = Gradient.Active or false
     local GColor1 = Gradient.Color1 or {255, 255, 255, 255}
     local GColor2 = Gradient.Color2 or {255, 255, 255, 255}
-    
+
     self.Gradient.Active = GActive
     self.Gradient.Color1 = GColor1
     self.Gradient.Color2 = GColor2
@@ -85,23 +89,42 @@ end
 
 function buttons:draw()
     local color = self.color
+    local borderColor =  self.Border.Color
+    local textColor =  self.textColor
 
-    if self.hold then
-        color = self.clickedColor
-    end
     local color1 = self.Gradient.Color1
     local color2 = self.Gradient.Color2
 
-    GradientShader:send("color1", ds.color.normal(color1))
-    GradientShader:send("color2", ds.color.normal(color2))
-    GradientShader:send("size", {self.size.w, self.size.h})
-    GradientShader:send("center", {self.size.w / 2 + self.position.x, self.size.h / 2 + self.position.y})
-    GradientShader:send("rotation", math.rad(self.Gradient.Rotation))
 
-    love.graphics.setShader(GradientShader) -- Load Shader
-    ds.draw.rectangle(self.position.x, self.position.y, self.size.w, self.size.h, nil, nil, nil, self.Border.Radius, self.Border.Color, self.Border.Active)
+    if self.hold then
+        color = self.clickedColor
+        textColor = {textColor[1] / self.ColorDecrease, textColor[2] / self.ColorDecrease, textColor[3] / self.ColorDecrease, textColor[4]}
+        borderColor = {borderColor[1] / self.ColorDecrease, borderColor[2] / self.ColorDecrease, borderColor[3] / self.ColorDecrease, borderColor[4]}
+        color1 = {color1[1] / self.ColorDecrease, color1[2] / self.ColorDecrease, color1[3] / self.ColorDecrease, color1[4] / self.ColorDecrease}
+        color2 = {color2[1] / self.ColorDecrease, color2[2] / self.ColorDecrease, color2[3] / self.ColorDecrease, color2[4] / self.ColorDecrease}
+        textColor = {textColor[1] / self.ColorDecrease, textColor[2] / self.ColorDecrease, textColor[3] / self.ColorDecrease, textColor[4]}
+    end
 
-    ds.draw.text(self.position.x, self.position.y, self.Z)
+    if self.Gradient.Active then
+
+        GradientShader:send("color1", ds.color.normal(color1))
+        GradientShader:send("color2", ds.color.normal(color2))
+        GradientShader:send("size", {self.size.w, self.size.h})
+        GradientShader:send("center", {self.size.w / 2 + self.position.x, self.size.h / 2 + self.position.y})
+        GradientShader:send("rotation", math.rad(self.Gradient.Rotation))
+        love.graphics.setShader(GradientShader)
+    end
+
+    ds.draw.rectangle(self.position.x, self.position.y, self.size.w, self.size.h, color, nil, nil, self.Border.Radius, borderColor, self.Border.Active)
+
+    local x = self.position.x + self.size.w / 2 - ((#self.text - 1) * self.textSize) / 2
+    local y = self.position.y + self.size.h / 2 - self.textSize / 2
+    
+    --ds.draw.rectangle(x, y + 15, (#self.text - 1) * self.textSize, self.textSize)
+
+    ds.draw.text(x, y, self.text, textColor, self.textSize)
+
+
 end
 
 function module.drawAll()
