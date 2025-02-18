@@ -1,14 +1,58 @@
-local module = {}
+local module = {
+    buttons = {},
+    checkBox = {}
+}
+
+BUTTON, CHECKBOX = "button", "checkbox"
 
 GlobalLayer = 1
 
 nameClicked = nil
 nameHold = nil
 
-buttons = {}
-buttons.__index = buttons
+click = false
 
-function buttons.new(name, x, y, w, h, color, text, textSize, textColor, layer, Zindex, clickedColor) --@string? @number?, @number?, @number?, @number?, @table?, @string?, @number?, @number?, @table?
+local checkSelectedIMG = love.graphics.newImage(PATH_LIBRARIES .. "check.png")
+
+function love.mousepressed(mx, my, button)
+    if button == 1 then
+        click = true
+    end
+end
+
+local objs = {}
+objs.__index = objs
+
+local buttons = {}
+buttons.__index = buttons
+setmetatable(buttons, objs)
+
+local checkBox = {}
+checkBox.__index = checkBox
+setmetatable(checkBox, objs)
+
+function module.checkBox.new(name, x, y, s, layer, Zindex)
+    name = name or "NIL"
+    layer = layer or 1
+    Zindex = Zindex or 1
+
+    local check = setmetatable({
+        name = name,
+        position = {x = x, y = y},
+        size = {w = s, h = s},
+        selected = false,
+        layer = layer,
+        Z = Zindex,
+        tipe = CHECKBOX
+
+    }, checkBox)
+
+    table.insert(objs, check)
+    module.updateZindex()
+    return check
+end
+
+function module.buttons.new(name, x, y, w, h, color, text, textSize, textColor, layer, Zindex, clickedColor) --@string? @number?, @number?, @number?, @number?, @table?, @string?, @number?, @number?, @table?
     color = color or {255, 255, 255, 255}
     clickedColor = clickedColor or {color[1] / 1.5, color[2] / 1.5, color[3] / 1.5, color[4]}
     name = name or "NIL"
@@ -40,11 +84,12 @@ function buttons.new(name, x, y, w, h, color, text, textSize, textColor, layer, 
             Color2 = {255, 255, 255, 255},
             Rotation = 0
         },
-        ColorDecrease = 1.5
+        ColorDecrease = 1.5,
+        tipe = BUTTON
 
     }, buttons)
 
-    table.insert(buttons, button)
+    table.insert(objs, button)
     module.updateZindex()
     return button
 end
@@ -127,13 +172,34 @@ function buttons:draw()
     --ds.draw.rectangle(x, y + 15, textWidth, textHeight)
     ds.draw.text(x, y, self.text, textColor, textWidth / (#self.text / 2))
 
+end
 
+function checkBox:draw()
+    local color = {128, 0, 255, 255}
+    local x, y, w, h = self.position.x, self.position.y, self.size.w, self.size.h
+    if self.selected then
+        color = {0, 255, 255, 255}
+        ds.draw.rectangle(x, y, w, h, color, nil, nil, 2, {30, 30, 30, 255}, true)
+        ds.draw.image(x, y, w, h, checkSelectedIMG)
+    else
+        ds.draw.rectangle(x, y, w, h, color, nil, nil, 2, {30, 30, 30, 255}, true)
+    end
+end
 
+function checkBox:update()
+    local x, y, w, h = self.position.x, self.position.y, self.size.w, self.size.h
+    local mx, my = MOUSEX, MOUSEY
+
+    if ds.isPointInBox(mx, my, x, y, w, h) then
+        if click then
+            self.selected = not self.selected
+        end
+    end
 end
 
 function module.drawAll()
-    for i = #buttons, 1, -1 do
-        local obj = buttons[i]
+    for i = #objs, 1, -1 do
+        local obj = objs[i]
         if GlobalLayer == obj.layer then
             obj:draw()
         end
@@ -143,12 +209,12 @@ end
 
 function module.updateZindex(func)
     func = func or function(a, b) return a.Z > b.Z end
-    table.sort(buttons, func)
+    table.sort(objs, func)
 end
 
 function module.updateAll()
     nameClicked = nil
-    for _, obj in ipairs(buttons) do
+    for i, obj in ipairs(objs) do
         if GlobalLayer == obj.layer then
             obj:update()
             local c = false
@@ -165,6 +231,7 @@ function module.updateAll()
             end
         end
     end
+    click = false
 end
 
 return module
